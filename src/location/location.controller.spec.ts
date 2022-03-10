@@ -1,26 +1,42 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { LocationController } from './location.controller';
 import { LocationService } from './location.service';
+import { MappingRegistryService } from '../common/mapping-registry.service';
+import { MockHelper } from '../common/mock.helper';
+import { GenericFactory } from '../common/generic.factory';
+import { LocationMappingService } from './location-mapping.service';
+import { Location } from './location.entity';
+
 
 
 describe('LocationController', () => {
-  let locationController: LocationController;
+  let locationController : LocationController;
+  let mockLocationService : LocationService;
+  let mappingRegistryService : MappingRegistryService;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [LocationController],
-    }).compile();
-
-    locationController = app.get<LocationController>(LocationController);
+    mockLocationService = MockHelper.mock<LocationService>({
+      list: {
+        resolves: [
+          GenericFactory.create<Location>(Location, {
+            id: '1',
+            name: 'Location 1',
+          }),
+        ],
+      },
+    });
+    mappingRegistryService = new MappingRegistryService();
+    const locationMappingService = new LocationMappingService(mappingRegistryService);
+    locationController = new LocationController(mockLocationService, mappingRegistryService);
   });
 
   describe('root', () => {
-    it('should return an array with locations', () => {
-      expect(locationController.listLocations()).toMatchObject({
+    it('should return an array with Locations', () => {
+      expect(locationController.listLocations()).resolves.toMatchObject({
         locations: [
-          "Location 1",
-          "Location 2",
-          "Location 3",
+          {
+            id: '1',
+            name: 'Location 1',
+          },
         ],
       });
     });

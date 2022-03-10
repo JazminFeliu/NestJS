@@ -1,6 +1,10 @@
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
 @Entity()
 export class Location {
+    @PrimaryGeneratedColumn('uuid')
     private id: string;
-    private name: string;
 
+    @Column()
+    private name: string;
 }
